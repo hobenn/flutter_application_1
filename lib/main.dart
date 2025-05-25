@@ -51,7 +51,7 @@ class _WeatherHomePageState extends State<WeatherHomePage>
   }
 
   Future<void> fetchWeather() async {
-    const apiKey = 'f4b4303bcf39eb4490701fa1d35886d3';
+    const apiKey = 'YOUR_API_KEY_HERE'; // <-- 여기에 OpenWeatherMap API 키 입력
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) throw Exception("위치 서비스 꺼짐");
@@ -76,7 +76,7 @@ class _WeatherHomePageState extends State<WeatherHomePage>
           : '현위치';
 
       final url =
-          'https://api.openweathermap.org/data/2.5/onecall?lat=$lat&lon=$lon&exclude=hourly,minutely&appid=$apiKey&units=metric&lang=kr';
+          'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric&lang=kr';
 
       final response = await http.get(Uri.parse(url));
       if (response.statusCode != 200) {
@@ -84,21 +84,20 @@ class _WeatherHomePageState extends State<WeatherHomePage>
       }
 
       final data = json.decode(response.body);
-      final today = data['daily'][0];
 
       setState(() {
         location = locality;
-        maxTemp = today['temp']['max'];
-        minTemp = today['temp']['min'];
-        currentTemp = data['current']?['temp'] ?? today['temp']['day'];
-        weatherDescription = today['weather'][0]['description'];
+        currentTemp = data['main']['temp'];
+        maxTemp = data['main']['temp_max'];
+        minTemp = data['main']['temp_min'];
+        weatherDescription = data['weather'][0]['description'];
         iconUrl =
-            'https://openweathermap.org/img/wn/${today['weather'][0]['icon']}@2x.png';
-        weeklyWeather = data['daily'];
+            'https://openweathermap.org/img/wn/${data['weather'][0]['icon']}@2x.png';
+        weeklyWeather = []; // 주간 날씨는 빈 리스트로 유지
         isLoading = false;
       });
     } catch (e) {
-      print("\u274c 에러 발생: $e");
+      print("❌ 에러 발생: $e");
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('날씨 데이터를 불러오지 못했습니다: $e')));
@@ -109,97 +108,10 @@ class _WeatherHomePageState extends State<WeatherHomePage>
         currentTemp = null;
         weatherDescription = "데이터 없음";
         iconUrl = "";
-        weeklyWeather = List.generate(7, (index) => {});
+        weeklyWeather = [];
         isLoading = false;
       });
     }
-  }
-
-  String _getDayLabel(int offset) {
-    DateTime date = DateTime.now().add(Duration(days: offset));
-    return DateFormat('M월 d일 EEEE', 'ko_KR').format(date);
-  }
-
-  Widget buildWeeklyStyledTextList() {
-    return Container(
-      margin: EdgeInsets.only(top: 30),
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: DefaultTabController(
-        length: 4,
-        child: Column(
-          children: [
-            TabBar(
-              isScrollable: true,
-              labelPadding: EdgeInsets.symmetric(horizontal: 24.0),
-              indicator: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                color: Colors.blue.shade100,
-              ),
-              tabs: [
-                Tab(text: '기온'),
-                Tab(text: '미세먼지'),
-                Tab(text: '날씨'),
-                Tab(icon: Icon(Icons.more_horiz)),
-              ],
-            ),
-            Container(
-              height: 400,
-              child: TabBarView(
-                controller: _tabController,
-                children: List.generate(4, (tabIndex) {
-                  return ListView.builder(
-                    itemCount: weeklyWeather.length,
-                    itemBuilder: (context, index) {
-                      final dayData = weeklyWeather[index];
-                      return Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12.0,
-                          horizontal: 16.0,
-                        ),
-                        margin: const EdgeInsets.symmetric(vertical: 4.0),
-                        decoration: BoxDecoration(
-                          color: index == 0
-                              ? Colors.blue.shade100
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.blue.shade100),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              _getDayLabel(index),
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            Text(
-                              (dayData['temp'] != null &&
-                                      dayData['feels_like'] != null)
-                                  ? '최고 ${dayData['temp']['max'].toStringAsFixed(0)}° / '
-                                        '최저 ${dayData['temp']['min'].toStringAsFixed(0)}° / '
-                                        '체감 ${dayData['feels_like']['day'].toStringAsFixed(0)}°'
-                                  : '데이터 없음',
-                              style: TextStyle(fontSize: 13),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                }),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
@@ -274,7 +186,13 @@ class _WeatherHomePageState extends State<WeatherHomePage>
                           ),
                         ],
                       ),
-                      buildWeeklyStyledTextList(),
+                      SizedBox(height: 30),
+                      Text(
+                        maxTemp != null && minTemp != null
+                            ? '최고 ${maxTemp!.toStringAsFixed(0)}° / 최저 ${minTemp!.toStringAsFixed(0)}°'
+                            : '최고 / 최저 기온 정보 없음',
+                        style: TextStyle(fontSize: 16, color: Colors.black),
+                      ),
                     ],
                   ),
                 ),
