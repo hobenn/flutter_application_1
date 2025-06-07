@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1045028490021",
+    "project_id": "whether-app-login",
+    "storage_bucket": "whether-app-login.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1045028490021:android:5e54a8507deff31a5b68cc",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDh4xTFnC3UJV9HwRfAgChFwVzDAeeUcwM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

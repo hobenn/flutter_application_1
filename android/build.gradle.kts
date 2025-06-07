@@ -19,3 +19,6 @@ subprojects {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+
+apply<com.google.gms.google.services.GoogleServicesPlugin>()

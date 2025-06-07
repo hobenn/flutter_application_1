@@ -42,3 +42,7 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    classpath("com.google.gms:google-services:4.4.1") // ✅ 이 줄 추가!
+}
